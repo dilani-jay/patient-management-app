@@ -1,18 +1,10 @@
-package com.monitoredrx.patientapi.entities;
+package com.monitoredrx.patientapi.dtos;
 
-import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
-@Setter
-@Table(name = "patients")
-public class Patient {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class PatientResponseDTO {
     private Long id;
     private String firstName;
     private String lastName;
