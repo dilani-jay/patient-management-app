@@ -1,5 +1,6 @@
 package com.monitoredrx.patientapi.services;
 
+import com.monitoredrx.patientapi.dtos.PaginatedResponse;
 import com.monitoredrx.patientapi.dtos.PatientRequestDTO;
 import com.monitoredrx.patientapi.dtos.PatientResponseDTO;
 import com.monitoredrx.patientapi.entities.Patient;
@@ -7,9 +8,9 @@ import com.monitoredrx.patientapi.exceptions.PatientNotFoundException;
 import com.monitoredrx.patientapi.mappers.PatientMapper;
 import com.monitoredrx.patientapi.repositories.PatientRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -18,10 +19,16 @@ public class PatientService {
     private final PatientRepository repository;
     private final PatientMapper mapper;
 
-    public List<PatientResponseDTO> getAllPatients() {
-        return repository.findAll().stream()
-                .map(mapper::toDTO)
-                .toList();
+    public PaginatedResponse<PatientResponseDTO> getAllPatients(Pageable pageable) {
+        Page<Patient> page = repository.findAll(pageable);
+
+        return new PaginatedResponse<>(
+                page.map(mapper::toDTO).getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 
     public PatientResponseDTO getPatientById(Long id) {

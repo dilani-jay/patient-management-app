@@ -1,14 +1,15 @@
 package com.monitoredrx.patientapi.controllers;
 
+import com.monitoredrx.patientapi.dtos.PaginatedResponse;
 import com.monitoredrx.patientapi.dtos.PatientRequestDTO;
 import com.monitoredrx.patientapi.dtos.PatientResponseDTO;
 import com.monitoredrx.patientapi.services.PatientService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -29,8 +30,8 @@ public class PatientController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PatientResponseDTO>> getAll() {
-        return ResponseEntity.ok(service.getAllPatients());
+    public ResponseEntity<PaginatedResponse<PatientResponseDTO>> getAll(@PageableDefault(size = 50) Pageable pageable) {
+        return ResponseEntity.ok(service.getAllPatients(pageable));
     }
 
     @PutMapping("/{id}")
