@@ -9,3 +9,5 @@ export interface PatientI {
     phoneNumber: string,
     email?: string,
 }
+
+export type PatientRequestBodyType = Omit<PatientI, "id">;

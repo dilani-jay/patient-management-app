@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { PatientI } from "../types/patient";
-import { getPatients } from "../services/patientService";
+import { getPatients, updatePatient } from "../services/patientService";
 
 const Dashboard: React.FC = () => {
 
     const [patients, setPatients] = useState<PatientI[]>([]);
+    const [editingPatient, setEditingPatient] = useState<PatientI | null>(null);
 
     const headerCellClassName = 'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6';
-    const dataCellClassName = `${headerCellClassName} whitespace-nowrap font-normal`
+    const dataCellClassName = `${headerCellClassName} whitespace-nowrap !font-normal`
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -19,6 +20,38 @@ const Dashboard: React.FC = () => {
         fetchPatients();
 
     }, []);
+
+    const handleEdit = (patient: PatientI) => {
+        setEditingPatient(patient);
+    };
+
+    const handleCancel = () => {
+        setEditingPatient(null);
+    };
+
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        field: keyof PatientI
+    ) => {
+        if (!editingPatient) return;
+        setEditingPatient({ ...editingPatient, [field]: e.target.value });
+    };
+
+    const handleSave = async () => {
+
+        if (!editingPatient) return;
+
+        const response = await updatePatient(editingPatient.id, editingPatient);
+        if (response) {
+            setPatients(prev =>
+                prev.map(p =>
+                    p.id === response.data.id ? response.data : p
+                )
+            );
+            setEditingPatient(null);
+        }
+
+    };
 
     return (
         <div className="flex bg-gradient-to-r from-cyan-50 to-blue-400 h-svh w-full">
@@ -77,22 +110,66 @@ const Dashboard: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {patients.map((patient) => (
-                                <tr key={patient.email}>
-                                    <td className={dataCellClassName}>
-                                        {patient.firstName}
-                                    </td>
-                                    <td className={dataCellClassName}>
-                                        {patient.lastName}
-                                    </td>
-                                    <td className={dataCellClassName}>{patient.address}</td>
-                                    <td className={dataCellClassName}>{patient.city}</td>
-                                    <td className={dataCellClassName}>{patient.state}</td>
-                                    <td className={dataCellClassName}>{patient.zipCode}</td>
-                                    <td className={dataCellClassName}>{patient.phoneNumber}</td>
-                                    <td className={dataCellClassName}>{patient.email}</td>
-                                </tr>
-                            ))}
+                            {patients.map((patient) => {
+
+                                const isEditing = editingPatient?.id === patient.id;
+
+                                return (
+                                    <tr key={patient.id}>
+                                        {["firstName", "lastName", "address", "city", "state", "zipCode", "phoneNumber", "email"].map(
+                                            (field) => (
+                                                <td key={field} className={dataCellClassName}>
+                                                    {isEditing ? (
+                                                        <input
+                                                            className="border rounded px-2 py-1 w-full"
+                                                            value={(editingPatient as any)?.[field]}
+                                                            onChange={(e) =>
+                                                                handleChange(e, field as keyof PatientI)
+                                                            }
+                                                        />
+                                                    ) : (
+                                                        (patient as any)[field]
+                                                    )}
+                                                </td>
+                                            )
+                                        )}
+
+                                        <td className={dataCellClassName}>
+                                            {isEditing ? (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleSave}
+                                                        className="text-green-600"
+                                                    >
+                                                        <CheckIcon className="size-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancel}
+                                                        className="text-gray-500"
+                                                    >
+                                                        <XMarkIcon className="size-5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleEdit(patient)}
+                                                        className="text-blue-700"
+                                                    >
+                                                        <PencilSquareIcon className="size-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {}}
+                                                        className="text-rose-600"
+                                                    >
+                                                        <TrashIcon className="size-5" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
