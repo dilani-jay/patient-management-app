@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ChevronDownIcon, CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { PatientI } from "../types/patient";
-import { getPatients, updatePatient } from "../services/patientService";
+import { deletePatient, getPatients, updatePatient } from "../services/patientService";
 
 const Dashboard: React.FC = () => {
 
@@ -9,7 +9,9 @@ const Dashboard: React.FC = () => {
     const [editingPatient, setEditingPatient] = useState<PatientI | null>(null);
 
     const headerCellClassName = 'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6';
-    const dataCellClassName = `${headerCellClassName} whitespace-nowrap !font-normal`
+    const dataCellClassName = `${headerCellClassName} whitespace-nowrap !font-normal`;
+
+    const patientFields: (keyof PatientI)[] = ["firstName", "lastName", "address", "city", "state", "zipCode", "phoneNumber", "email"];
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -21,15 +23,11 @@ const Dashboard: React.FC = () => {
 
     }, []);
 
-    const handleEdit = (patient: PatientI) => {
-        setEditingPatient(patient);
-    };
+    const toggleEditMode = (patient?: PatientI) => {
+        setEditingPatient(patient ?? null)
+    }
 
-    const handleCancel = () => {
-        setEditingPatient(null);
-    };
-
-    const handleChange = (
+    const updateEditingPatientField = (
         e: React.ChangeEvent<HTMLInputElement>,
         field: keyof PatientI
     ) => {
@@ -37,7 +35,7 @@ const Dashboard: React.FC = () => {
         setEditingPatient({ ...editingPatient, [field]: e.target.value });
     };
 
-    const handleSave = async () => {
+    const saveEditedPatient = async () => {
 
         if (!editingPatient) return;
 
@@ -52,6 +50,18 @@ const Dashboard: React.FC = () => {
         }
 
     };
+
+    const deleteSelectedPatient = async (patientId: number) => {
+        const response = await deletePatient(patientId);
+        
+        if(response) {
+            setPatients(prev =>
+                prev.filter(p =>
+                    p.id !== patientId
+                )
+            );
+        }       
+    }
 
     return (
         <div className="flex bg-gradient-to-r from-cyan-50 to-blue-400 h-svh w-full">
@@ -116,15 +126,15 @@ const Dashboard: React.FC = () => {
 
                                 return (
                                     <tr key={patient.id}>
-                                        {["firstName", "lastName", "address", "city", "state", "zipCode", "phoneNumber", "email"].map(
+                                        {patientFields.map(
                                             (field) => (
                                                 <td key={field} className={dataCellClassName}>
                                                     {isEditing ? (
                                                         <input
                                                             className="border rounded px-2 py-1 w-full"
-                                                            value={(editingPatient as any)?.[field]}
+                                                            value={editingPatient?.[field]}
                                                             onChange={(e) =>
-                                                                handleChange(e, field as keyof PatientI)
+                                                                updateEditingPatientField(e, field)
                                                             }
                                                         />
                                                     ) : (
@@ -138,13 +148,13 @@ const Dashboard: React.FC = () => {
                                             {isEditing ? (
                                                 <div className="flex gap-2">
                                                     <button
-                                                        onClick={handleSave}
+                                                        onClick={saveEditedPatient}
                                                         className="text-green-600"
                                                     >
                                                         <CheckIcon className="size-5" />
                                                     </button>
                                                     <button
-                                                        onClick={handleCancel}
+                                                        onClick={() => toggleEditMode()}
                                                         className="text-gray-500"
                                                     >
                                                         <XMarkIcon className="size-5" />
@@ -153,13 +163,13 @@ const Dashboard: React.FC = () => {
                                             ) : (
                                                 <div className="flex gap-2">
                                                     <button
-                                                        onClick={() => handleEdit(patient)}
+                                                        onClick={() => toggleEditMode(patient)}
                                                         className="text-blue-700"
                                                     >
                                                         <PencilSquareIcon className="size-5" />
                                                     </button>
                                                     <button
-                                                        onClick={() => {}}
+                                                        onClick={() => deleteSelectedPatient(patient.id)}
                                                         className="text-rose-600"
                                                     >
                                                         <TrashIcon className="size-5" />

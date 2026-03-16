@@ -20,3 +20,12 @@ export const updatePatient = async (patientId: number, requestBody: PatientReque
         console.error('Error updating patient: ', error);
     }
 }
+
+export const deletePatient = async (patientId: number) => {
+    try {
+        const response = await axios.delete(`${API_URL}/${patientId}`);
+        return response;
+    } catch (error) {
+        console.error('Error deleting patient: ', error);
+    }
+}
