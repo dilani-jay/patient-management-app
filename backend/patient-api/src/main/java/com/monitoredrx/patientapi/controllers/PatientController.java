@@ -37,9 +37,10 @@ public class PatientController {
 
     @Validated
     @GetMapping
-    public ResponseEntity<PaginatedResponse<PatientResponseDTO>> getAll(@Valid PaginationRequest request) {
+    public ResponseEntity<PaginatedResponse<PatientResponseDTO>> getAll(@ModelAttribute @Valid PaginationRequest request) {
         if (!SortFields.PATIENT.contains(request.getSortBy())) {
-            throw new BadRequestException("Invalid sort field");
+            throw new BadRequestException("Invalid sortBy value: '" +  request.getSortBy() +
+                    "'. Allowed values are: " + String.join(", ", SortFields.PATIENT));
         }
 
         Sort.Direction direction;
@@ -47,7 +48,7 @@ public class PatientController {
         try {
             direction = Sort.Direction.fromString(request.getDirection());
         } catch (Exception e) {
-            throw new BadRequestException("Invalid sort direction. Use 'asc' or 'desc'");
+            throw new BadRequestException("Invalid direction value. Use 'asc' or 'desc'");
         }
 
         Pageable pageable = PageRequest.of(
