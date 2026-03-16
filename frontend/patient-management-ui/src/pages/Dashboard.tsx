@@ -4,6 +4,7 @@ import { PatientI, PatientRequestBodyType } from "../types/patient";
 import { createPatient, deletePatient, getPatients, updatePatient } from "../services/patientService";
 import Input from "../components/Input";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import toast from "react-hot-toast";
 
 const Dashboard: React.FC = () => {
 
@@ -61,6 +62,9 @@ const Dashboard: React.FC = () => {
                 )
             );
             setEditingPatient(null);
+            toast.success("Patient updated successfully");
+        } else {
+            toast.error("Failed to update patient");
         }
 
     };
@@ -77,6 +81,9 @@ const Dashboard: React.FC = () => {
                 )
             );
             setDeletingPatientId(null);
+            toast.success("Patient deleted successfully");
+        } else {
+            toast.error("Failed to delete patient");
         }
     }
 
@@ -101,6 +108,9 @@ const Dashboard: React.FC = () => {
                 [response.data, ...prev]
             );
             setCreatingPatient(null);
+            toast.success("Patient created successfully");
+        } else {
+            toast.error("Failed to create patient");
         }
 
     };

@@ -1,15 +1,17 @@
-import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-    </Routes>
+    <>
+      <Toaster position="top-right" />
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </>
   );
 }
 
