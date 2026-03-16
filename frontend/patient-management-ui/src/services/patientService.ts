@@ -1,11 +1,16 @@
 import axios from "axios";
-import { PatientRequestBodyType } from "../types/patient";
+import { PatientI, PatientRequestBodyType } from "../types/patient";
 
 const API_URL = "/api/patients";
 
-export const getPatients = async () => {
+export const getPatients = async (sortBy?: keyof PatientI, direction?: 'asc' | 'desc') => {
     try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(API_URL, {
+            params: {
+                sortBy,
+                direction,
+            },
+        });
         return response;
     } catch (error) {
         console.error('Error fetching patients: ', error);

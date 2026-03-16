@@ -1,4 +1,4 @@
-export interface InputProps
+interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string,
   requiredIndicator?: boolean

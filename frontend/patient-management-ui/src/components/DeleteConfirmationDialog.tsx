@@ -1,7 +1,7 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
-export interface DeleteConfirmationDialogProps{
+interface DeleteConfirmationDialogProps{
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void

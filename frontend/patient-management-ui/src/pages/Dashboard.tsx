@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDownIcon, CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { PatientI, PatientRequestBodyType } from "../types/patient";
 import { createPatient, deletePatient, getPatients, updatePatient } from "../services/patientService";
 import Input from "../components/Input";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import toast from "react-hot-toast";
+import SortIcon from "../components/SortIcon";
 
 const Dashboard: React.FC = () => {
 
@@ -12,6 +13,8 @@ const Dashboard: React.FC = () => {
     const [editingPatient, setEditingPatient] = useState<PatientI | null>(null);
     const [creatingPatient, setCreatingPatient] = useState<Partial<PatientI> | null>(null);
     const [deletingPatientId, setDeletingPatientId] = useState<number | null>(null);
+    const [sortField, setSortField] = useState<keyof PatientI>('id');
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
     const headerCellClassName = 'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6';
     const dataCellClassName = `${headerCellClassName} whitespace-nowrap !font-normal`;
@@ -22,13 +25,13 @@ const Dashboard: React.FC = () => {
 
     useEffect(() => {
         const fetchPatients = async () => {
-            const response = await getPatients();
+            const response = await getPatients(sortField, sortDirection);
             setPatients(response?.data.elements ?? [])
         };
 
         fetchPatients();
 
-    }, []);
+    }, [sortField, sortDirection]);
 
     const disableCreateSaveButton = useMemo(() => {
         return !creatingPatient || !creatingPatient.firstName || !creatingPatient.lastName || !creatingPatient.phoneNumber
@@ -73,7 +76,6 @@ const Dashboard: React.FC = () => {
         if (!deletingPatientId) return
 
         const response = await deletePatient(deletingPatientId);
-
         if (response) {
             setPatients(prev =>
                 prev.filter(p =>
@@ -115,6 +117,15 @@ const Dashboard: React.FC = () => {
 
     };
 
+    const handleSort = (field: keyof PatientI) => {
+        if (sortField === field) {
+            setSortDirection(prev => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
     return (
         <div className="flex bg-gradient-to-r from-cyan-50 to-blue-400 min-h-svh w-full">
             <div className="p-4 sm:p-6 lg:p-8 h-full w-full">
@@ -126,34 +137,31 @@ const Dashboard: React.FC = () => {
                         <thead>
                             <tr>
                                 <th scope="col" className={headerCellClassName}>
-                                    <a href="#" className="group inline-flex">
+                                    <span className="group inline-flex cursor-pointer" onClick={() => handleSort('firstName')}>
                                         First Name
-                                        <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                                            <ChevronDownIcon aria-hidden="true" className="size-5" />
+                                        <span className="ml-2 flex-none rounded text-gray-400">
+                                            {sortField === 'firstName' && <SortIcon direction={sortDirection} />}
                                         </span>
-                                    </a>
+                                    </span>
                                 </th>
                                 <th scope="col" className={headerCellClassName}>
-                                    <a href="#" className="group inline-flex">
+                                    <span className="group inline-flex cursor-pointer" onClick={() => handleSort('lastName')}>
                                         Last Name
-                                        <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                                            <ChevronDownIcon aria-hidden="true" className="size-5" />
+                                        <span className="ml-2 flex-none rounded text-gray-400">
+                                            {sortField === 'lastName' && <SortIcon direction={sortDirection} />}
                                         </span>
-                                    </a>
+                                    </span>
                                 </th>
                                 <th scope="col" className={headerCellClassName}>
                                     Address
                                 </th>
                                 <th scope="col" className={headerCellClassName}>
-                                    <a href="#" className="group inline-flex">
+                                    <span className="group inline-flex cursor-pointer" onClick={() => handleSort('city')}>
                                         City
-                                        <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                                            <ChevronDownIcon
-                                                aria-hidden="true"
-                                                className="invisible ml-2 size-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible"
-                                            />
+                                        <span className="ml-2 flex-none rounded text-gray-400">
+                                            {sortField === 'city' && <SortIcon direction={sortDirection} />}
                                         </span>
-                                    </a>
+                                    </span>
                                 </th>
                                 <th scope="col" className={headerCellClassName}>
                                     State
