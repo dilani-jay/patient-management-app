@@ -17,6 +17,7 @@ const Dashboard: React.FC = () => {
     const iconButtonClassName = 'p-1 rounded-md hover:bg-gray-100 disabled:text-gray-200 disabled:cursor-not-allowed'
 
     const visiblePatientFields: (keyof PatientI)[] = ["firstName", "lastName", "address", "city", "state", "zipCode", "phoneNumber", "email"];
+    const requiredPatientFields: (keyof PatientI)[] = ["firstName", "lastName", "phoneNumber"];
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -65,7 +66,7 @@ const Dashboard: React.FC = () => {
     };
 
     const deleteSelectedPatient = async () => {
-        if(!deletingPatientId) return
+        if (!deletingPatientId) return
 
         const response = await deletePatient(deletingPatientId);
 
@@ -164,6 +165,8 @@ const Dashboard: React.FC = () => {
                                     (field) => (
                                         <td key={field} className={dataCellClassName}>
                                             <Input className="border rounded px-2 py-1 w-full"
+                                                required={requiredPatientFields.includes(field)}
+                                                requiredIndicator={!!creatingPatient && requiredPatientFields.includes(field)}
                                                 value={creatingPatient?.[field] ?? ''}
                                                 onChange={(e) =>
                                                     updateCreatingPatientField(e, field)
@@ -202,6 +205,8 @@ const Dashboard: React.FC = () => {
                                                 <td key={field} className={dataCellClassName}>
                                                     {isEditing ? (
                                                         <Input className="border rounded px-2 py-1 w-full"
+                                                            required={requiredPatientFields.includes(field)}
+                                                            requiredIndicator={requiredPatientFields.includes(field)}
                                                             value={editingPatient?.[field]}
                                                             onChange={(e) =>
                                                                 updateEditingPatientField(e, field)
@@ -234,7 +239,7 @@ const Dashboard: React.FC = () => {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => toggleEditMode(patient)}
-                                                        className={`text-blue-800 ${iconButtonClassName}`}
+                                                        className={`text-blue-600 ${iconButtonClassName}`}
                                                     >
                                                         <PencilSquareIcon className="size-5" />
                                                     </button>
