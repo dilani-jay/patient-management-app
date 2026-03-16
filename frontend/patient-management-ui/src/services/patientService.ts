@@ -29,3 +29,12 @@ export const deletePatient = async (patientId: number) => {
         console.error('Error deleting patient: ', error);
     }
 }
+
+export const createPatient = async (requestBody: PatientRequestBodyType) => {
+    try {
+        const response = await axios.post(API_URL, requestBody);
+        return response;
+    } catch (error) {
+        console.error('Error creating patient: ', error);
+    }
+};
