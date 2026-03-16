@@ -3,13 +3,14 @@ import { ChevronDownIcon, CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon } fr
 import { PatientI, PatientRequestBodyType } from "../types/patient";
 import { createPatient, deletePatient, getPatients, updatePatient } from "../services/patientService";
 import Input from "../components/Input";
-import Button from "../components/Button";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 
 const Dashboard: React.FC = () => {
 
     const [patients, setPatients] = useState<PatientI[]>([]);
     const [editingPatient, setEditingPatient] = useState<PatientI | null>(null);
     const [creatingPatient, setCreatingPatient] = useState<Partial<PatientI> | null>(null);
+    const [deletingPatientId, setDeletingPatientId] = useState<number | null>(null);
 
     const headerCellClassName = 'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6';
     const dataCellClassName = `${headerCellClassName} whitespace-nowrap !font-normal`;
@@ -63,15 +64,18 @@ const Dashboard: React.FC = () => {
 
     };
 
-    const deleteSelectedPatient = async (patientId: number) => {
-        const response = await deletePatient(patientId);
+    const deleteSelectedPatient = async () => {
+        if(!deletingPatientId) return
+
+        const response = await deletePatient(deletingPatientId);
 
         if (response) {
             setPatients(prev =>
                 prev.filter(p =>
-                    p.id !== patientId
+                    p.id !== deletingPatientId
                 )
             );
+            setDeletingPatientId(null);
         }
     }
 
@@ -104,7 +108,7 @@ const Dashboard: React.FC = () => {
         <div className="flex bg-gradient-to-r from-cyan-50 to-blue-400 min-h-svh w-full">
             <div className="p-4 sm:p-6 lg:p-8 h-full w-full">
                 <div className="sm:flex sm:justify-between">
-                    <h1 className="text-4xl font-semibold text-gray-900">Patient Dashboard</h1>
+                    <h1 className="text-4xl font-semibold text-blue-950">Patient Dashboard</h1>
                 </div>
                 <div className="-mx-4 mt-10 ring-1 ring-gray-300 sm:mx-0 sm:rounded-lg pb-4 bg-white">
                     <table className="relative min-w-full divide-y divide-gray-300">
@@ -201,7 +205,7 @@ const Dashboard: React.FC = () => {
                                                             value={editingPatient?.[field]}
                                                             onChange={(e) =>
                                                                 updateEditingPatientField(e, field)
-                                                            }/>
+                                                            } />
                                                     ) : (
                                                         patient[field]
                                                     )}
@@ -230,13 +234,13 @@ const Dashboard: React.FC = () => {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => toggleEditMode(patient)}
-                                                        className={`text-blue-700 ${iconButtonClassName}`}
+                                                        className={`text-blue-800 ${iconButtonClassName}`}
                                                     >
                                                         <PencilSquareIcon className="size-5" />
                                                     </button>
                                                     <button
-                                                        onClick={() => deleteSelectedPatient(patient.id)}
-                                                        className={`text-rose-600 ${iconButtonClassName}`}
+                                                        onClick={() => setDeletingPatientId(patient.id)}
+                                                        className={`text-red-600 ${iconButtonClassName}`}
                                                     >
                                                         <TrashIcon className="size-5" />
                                                     </button>
@@ -250,6 +254,7 @@ const Dashboard: React.FC = () => {
                     </table>
                 </div>
             </div>
+            <DeleteConfirmationDialog isOpen={!!deletingPatientId} onClose={() => setDeletingPatientId(null)} onConfirm={() => deleteSelectedPatient()} />
         </div>
     );
 };
