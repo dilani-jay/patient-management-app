@@ -1,7 +1,7 @@
 import axios from "axios";
 import { PatientI, PatientRequestBodyType } from "../types/patient";
 
-const API_URL = "/api/patients";
+const API_URL = "/patient";
 
 export const getPatients = async (sortBy?: keyof PatientI, direction?: 'asc' | 'desc', page?: number, size: number = 10) => {
     try {

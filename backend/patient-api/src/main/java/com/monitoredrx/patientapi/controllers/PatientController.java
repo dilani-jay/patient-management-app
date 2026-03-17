@@ -22,7 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/patients")
+@RequestMapping("/patient")
 @AllArgsConstructor
 @Tag(name = "Patients", description = "Patient management APIs")
 public class PatientController {
