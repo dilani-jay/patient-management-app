@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
     }
 
     const getSaveErrorMsg = (patient: PatientI | Partial<PatientI>) => {
-        if (patient.state && !isValidZipCode(patient.state)) {
+        if (patient.zipCode && !isValidZipCode(patient.zipCode)) {
             return INVALID_ZIP_CODE;
         } else if (patient.email && !isValidEmail(patient.email)) {
             return INVALID_EMAIL;
