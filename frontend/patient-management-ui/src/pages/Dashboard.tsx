@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
 
         fetchPatients();
 
-    }, [sortField, sortDirection, currentPage]);
+    }, [sortField, sortDirection, currentPage, totalPages]);
 
     const hasRequiredFieldValues = (patient: PatientI | Partial<PatientI>) => {
         for (const key of requiredPatientFields) {
@@ -108,7 +108,7 @@ const Dashboard: React.FC = () => {
         if (response) {
             setDeletingPatientId(null);
             toast.success(PATIENT_DELETE_SUCCESS);
-            setCurrentPage(0);
+            setTotalPages(prev => prev - 1);
         } else {
             toast.error(PATIENT_DELETE_ERROR);
         }
@@ -140,7 +140,7 @@ const Dashboard: React.FC = () => {
         if (response) {
             setCreatingPatient(null);
             toast.success(PATIENT_CREATE_SUCCESS);
-            setCurrentPage(0);
+            setTotalPages(prev => prev + 1);
         } else {
             toast.error(PATIENT_CREATE_ERROR);
         }
