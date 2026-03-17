@@ -87,7 +87,7 @@ public class PatientController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<PatientResponseDTO> update(@PathVariable Long id,
-                                                     @RequestBody PatientRequestDTO dto) {
+                                                     @Valid @RequestBody PatientRequestDTO dto) {
         return ResponseEntity.ok(service.updatePatient(id, dto));
     }
 
