@@ -23,7 +23,7 @@ public class PatientRequestDTO {
 
     @Pattern(
             regexp = "^[0-9]{5}(?:-[0-9]{4})?$",
-            message = "zip Code must be valid (e.g., 12345 or 12345-6789)"
+            message = "Zip Code must be valid (e.g., 12345 or 12345-6789)"
     )
     private String zipCode;
 

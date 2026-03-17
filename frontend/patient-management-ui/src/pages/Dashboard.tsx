@@ -6,6 +6,9 @@ import Input from "../components/Input";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import toast from "react-hot-toast";
 import SortIcon from "../components/SortIcon";
+import { isValidEmail, isValidPhoneNumber, isValidZipCode } from "../utils/validationHelpers";
+import { INVALID_EMAIL, INVALID_PHONE_NUMBER, INVALID_ZIP_CODE, PATIENT_CREATE_ERROR, PATIENT_DELETE_ERROR, PATIENT_UPDATE_ERROR, REQUIRED_FIELDS_EMPTY } from "../constants/toastMsgs/errorMsgs";
+import { PATIENT_CREATE_SUCCESS, PATIENT_DELETE_SUCCESS, PATIENT_UPDATE_SUCCESS } from "../constants/toastMsgs/successMsgs";
 
 const Dashboard: React.FC = () => {
 
@@ -33,13 +36,29 @@ const Dashboard: React.FC = () => {
 
     }, [sortField, sortDirection]);
 
-    const disableCreateSaveButton = useMemo(() => {
-        return !creatingPatient || !creatingPatient.firstName || !creatingPatient.lastName || !creatingPatient.phoneNumber
-    }, [creatingPatient]);
+    const hasRequiredFieldValues = (patient: PatientI | Partial<PatientI>) => {
+        for (const key of requiredPatientFields) {
+            const value = patient[key];
 
-    const disableEditSaveButton = useMemo(() => {
-        return !editingPatient || !editingPatient.firstName || !editingPatient.lastName || !editingPatient.phoneNumber
-    }, [editingPatient]);
+            if (!value || value.toString().trim() === "") {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const getSaveErrorMsg = (patient: PatientI | Partial<PatientI>) => {
+        if (patient.state && !isValidZipCode(patient.state)) {
+            return INVALID_ZIP_CODE;
+        } else if (patient.email && !isValidEmail(patient.email)) {
+            return INVALID_EMAIL;
+        } else if (!hasRequiredFieldValues(patient)) {
+            return REQUIRED_FIELDS_EMPTY;
+        } else if (patient.phoneNumber && !isValidPhoneNumber(patient.phoneNumber)) {
+            return INVALID_PHONE_NUMBER;
+        } 
+        return null;
+    }
 
     const toggleEditMode = (patient?: PatientI) => {
         setEditingPatient(patient ?? null)
@@ -57,6 +76,13 @@ const Dashboard: React.FC = () => {
 
         if (!editingPatient) return;
 
+        const errorMsg = getSaveErrorMsg(editingPatient);
+
+        if (errorMsg) {
+            toast.error(errorMsg);
+            return;
+        }
+
         const response = await updatePatient(editingPatient.id, editingPatient);
         if (response) {
             setPatients(prev =>
@@ -65,9 +91,9 @@ const Dashboard: React.FC = () => {
                 )
             );
             setEditingPatient(null);
-            toast.success("Patient updated successfully");
+            toast.success(PATIENT_UPDATE_SUCCESS);
         } else {
-            toast.error("Failed to update patient");
+            toast.error(PATIENT_UPDATE_ERROR);
         }
 
     };
@@ -83,9 +109,9 @@ const Dashboard: React.FC = () => {
                 )
             );
             setDeletingPatientId(null);
-            toast.success("Patient deleted successfully");
+            toast.success(PATIENT_DELETE_SUCCESS);
         } else {
-            toast.error("Failed to delete patient");
+            toast.error(PATIENT_DELETE_ERROR);
         }
     }
 
@@ -104,15 +130,22 @@ const Dashboard: React.FC = () => {
 
         if (!creatingPatient) return;
 
+        const errorMsg = getSaveErrorMsg(creatingPatient);
+
+        if (errorMsg) {
+            toast.error(errorMsg);
+            return;
+        }
+
         const response = await createPatient(creatingPatient as PatientRequestBodyType);
         if (response) {
             setPatients(prev =>
                 [response.data, ...prev]
             );
             setCreatingPatient(null);
-            toast.success("Patient created successfully");
+            toast.success(PATIENT_CREATE_SUCCESS);
         } else {
-            toast.error("Failed to create patient");
+            toast.error(PATIENT_CREATE_ERROR);
         }
 
     };
@@ -197,7 +230,7 @@ const Dashboard: React.FC = () => {
                                         <button
                                             onClick={saveCreatingPatient}
                                             className={`text-green-600 ${iconButtonClassName}`}
-                                            disabled={disableCreateSaveButton}
+                                            disabled={!creatingPatient || !hasRequiredFieldValues(creatingPatient)}
                                         >
                                             <CheckIcon className="size-5" />
                                         </button>
@@ -242,7 +275,7 @@ const Dashboard: React.FC = () => {
                                                     <button
                                                         onClick={saveEditedPatient}
                                                         className={`text-green-600 ${iconButtonClassName}`}
-                                                        disabled={disableEditSaveButton}
+                                                        disabled={!editingPatient || !hasRequiredFieldValues(editingPatient) }
                                                     >
                                                         <CheckIcon className="size-5" />
                                                     </button>
