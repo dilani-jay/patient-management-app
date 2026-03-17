@@ -3,12 +3,14 @@ import { PatientI, PatientRequestBodyType } from "../types/patient";
 
 const API_URL = "/api/patients";
 
-export const getPatients = async (sortBy?: keyof PatientI, direction?: 'asc' | 'desc') => {
+export const getPatients = async (sortBy?: keyof PatientI, direction?: 'asc' | 'desc', page?: number, size: number = 10) => {
     try {
         const response = await axios.get(API_URL, {
             params: {
                 sortBy,
                 direction,
+                page,
+                size
             },
         });
         return response;

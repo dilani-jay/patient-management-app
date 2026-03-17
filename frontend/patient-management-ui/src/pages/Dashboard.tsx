@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDownIcon, CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import React, { useEffect, useState } from "react";
+import { CheckIcon, XMarkIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { PatientI, PatientRequestBodyType } from "../types/patient";
 import { createPatient, deletePatient, getPatients, updatePatient } from "../services/patientService";
 import Input from "../components/Input";
@@ -18,6 +18,8 @@ const Dashboard: React.FC = () => {
     const [deletingPatientId, setDeletingPatientId] = useState<number | null>(null);
     const [sortField, setSortField] = useState<keyof PatientI>('id');
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     const headerCellClassName = 'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6';
     const dataCellClassName = `${headerCellClassName} whitespace-nowrap !font-normal`;
@@ -28,13 +30,14 @@ const Dashboard: React.FC = () => {
 
     useEffect(() => {
         const fetchPatients = async () => {
-            const response = await getPatients(sortField, sortDirection);
+            const response = await getPatients(sortField, sortDirection, currentPage);
             setPatients(response?.data.elements ?? [])
+            setTotalPages(response?.data.totalPages ?? 0);
         };
 
         fetchPatients();
 
-    }, [sortField, sortDirection]);
+    }, [sortField, sortDirection, currentPage]);
 
     const hasRequiredFieldValues = (patient: PatientI | Partial<PatientI>) => {
         for (const key of requiredPatientFields) {
@@ -56,7 +59,7 @@ const Dashboard: React.FC = () => {
             return REQUIRED_FIELDS_EMPTY;
         } else if (patient.phoneNumber && !isValidPhoneNumber(patient.phoneNumber)) {
             return INVALID_PHONE_NUMBER;
-        } 
+        }
         return null;
     }
 
@@ -103,13 +106,9 @@ const Dashboard: React.FC = () => {
 
         const response = await deletePatient(deletingPatientId);
         if (response) {
-            setPatients(prev =>
-                prev.filter(p =>
-                    p.id !== deletingPatientId
-                )
-            );
             setDeletingPatientId(null);
             toast.success(PATIENT_DELETE_SUCCESS);
+            setCurrentPage(0);
         } else {
             toast.error(PATIENT_DELETE_ERROR);
         }
@@ -139,11 +138,9 @@ const Dashboard: React.FC = () => {
 
         const response = await createPatient(creatingPatient as PatientRequestBodyType);
         if (response) {
-            setPatients(prev =>
-                [response.data, ...prev]
-            );
             setCreatingPatient(null);
             toast.success(PATIENT_CREATE_SUCCESS);
+            setCurrentPage(0);
         } else {
             toast.error(PATIENT_CREATE_ERROR);
         }
@@ -157,6 +154,7 @@ const Dashboard: React.FC = () => {
             setSortField(field);
             setSortDirection("asc");
         }
+        setCurrentPage(0);
     };
 
     return (
@@ -275,7 +273,7 @@ const Dashboard: React.FC = () => {
                                                     <button
                                                         onClick={saveEditedPatient}
                                                         className={`text-green-600 ${iconButtonClassName}`}
-                                                        disabled={!editingPatient || !hasRequiredFieldValues(editingPatient) }
+                                                        disabled={!editingPatient || !hasRequiredFieldValues(editingPatient)}
                                                     >
                                                         <CheckIcon className="size-5" />
                                                     </button>
@@ -308,6 +306,32 @@ const Dashboard: React.FC = () => {
                             })}
                         </tbody>
                     </table>
+
+                    <div className="flex items-center justify-between px-4 py-3 border-t">
+
+                        <div className="text-sm text-gray-600">
+                            Page {currentPage + 1} of {totalPages}
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button
+                                className="px-3 py-1 border rounded disabled:opacity-50"
+                                disabled={currentPage === 0}
+                                onClick={() => setCurrentPage(prev => prev - 1)}
+                            >
+                                Previous
+                            </button>
+
+                            <button
+                                className="px-3 py-1 border rounded disabled:opacity-50"
+                                disabled={currentPage + 1 >= totalPages}
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                            >
+                                Next
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
             </div>
             <DeleteConfirmationDialog isOpen={!!deletingPatientId} onClose={() => setDeletingPatientId(null)} onConfirm={() => deleteSelectedPatient()} />
